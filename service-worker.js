@@ -1,4 +1,4 @@
-const CACHE_NAME = "cutscript-mobile-v1";
+const CACHE_NAME = "cutscript-mobile-v2";
 const ASSETS = [
   "./",
   "./index.html",
@@ -27,8 +27,12 @@ self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
 
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      return cached || fetch(event.request);
-    })
+    caches.match(event.request).then(cached =>
+      cached || fetch(event.request).then(response => {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+        return response;
+      })
+    )
   );
 });
