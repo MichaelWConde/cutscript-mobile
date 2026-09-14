@@ -1,4 +1,4 @@
-const CACHE_NAME = "cutscript-mobile-v3";
+const CACHE_NAME = "cutscript-mobile-v4";
 const ASSETS = [
   "./",
   "./index.html",
