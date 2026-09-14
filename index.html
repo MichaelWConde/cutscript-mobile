@@ -1,131 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#111318" />
-  <link rel="manifest" href="manifest.webmanifest">
-  <title>CutScript Mobile</title>
-  <style>
-    :root{--bg:#111318;--panel:#1a1f27;--panel2:#222936;--text:#f2f4f8;--muted:#9aa4b2;--accent:#6ea8fe;--danger:#ff6b6b;--keep:#6bd89f;--border:#313946}
-    *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-    .wrap{width:min(760px,100%);margin:0 auto;padding:16px;padding-bottom:max(16px,env(safe-area-inset-bottom))}h1{margin:8px 0 4px;font-size:1.6rem}.sub,.status{color:var(--muted)}.sub{margin:0 0 16px;line-height:1.4}.status{margin-top:12px;font-size:.85rem}.toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
-    button,.file-label{border:1px solid var(--border);background:var(--panel2);color:var(--text);padding:12px 14px;min-height:44px;border-radius:12px;font-size:1rem;cursor:pointer;touch-action:manipulation}button:disabled{opacity:.45;cursor:default}.file-label{display:inline-flex;align-items:center;justify-content:center}input[type=file]{display:none}
-    .option{display:flex;gap:10px;align-items:flex-start;background:var(--panel);border:1px solid var(--border);padding:12px 14px;border-radius:12px;margin:10px 0 14px}.option input{width:20px;height:20px;margin-top:1px}.option strong{display:block}.option span{display:block;color:var(--muted);font-size:.86rem;margin-top:2px;line-height:1.35}
-    .resume{display:none;background:var(--panel);border:1px solid var(--accent);padding:12px 14px;border-radius:12px;margin-bottom:14px}.resume.show{display:block}.resume-title{font-weight:700}.resume-text{color:var(--muted);font-size:.88rem;margin-top:4px}
-    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.stat{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center}.stat .num{font-weight:800;font-size:1.15rem}.stat .label{color:var(--muted);font-size:.78rem;margin-top:3px}
-    .progress-wrap{margin:12px 0 16px}.progress-bar{height:10px;background:var(--panel2);border-radius:999px;overflow:hidden;border:1px solid var(--border)}.progress-fill{height:100%;width:0;background:var(--accent);transition:width .15s}.progress-text{margin-top:6px;color:var(--muted);font-size:.85rem;text-align:center}
-    .card-stack{position:relative;min-height:270px}.card{position:relative;background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:18px;min-height:245px;display:flex;flex-direction:column;justify-content:space-between;user-select:none;touch-action:pan-y;transition:transform .18s,opacity .18s}.card.dragging{transition:none}.timestamp{color:var(--muted);font-size:.9rem;margin-bottom:18px}.line{font-size:1.35rem;line-height:1.45;white-space:pre-wrap;word-break:break-word;flex:1;display:flex;align-items:center}.hint{color:var(--muted);font-size:.85rem;margin-top:18px;text-align:center}.swipe-label{position:absolute;top:18px;font-weight:800;opacity:0;pointer-events:none}.swipe-label.cut{left:18px;color:var(--danger)}.swipe-label.keep{right:18px;color:var(--keep)}
-    .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.empty{background:var(--panel);border:1px dashed var(--border);border-radius:18px;padding:28px 18px;text-align:center;color:var(--muted)}
-    @media(max-width:480px){.wrap{padding:12px}.line{font-size:1.18rem}.toolbar>*{flex:1 1 calc(50% - 10px)}}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#111318">
+<link rel="manifest" href="manifest.webmanifest">
+<title>CutScript Mobile</title>
+<style>
+:root{--bg:#111318;--panel:#1a1f27;--panel2:#222936;--text:#f2f4f8;--muted:#9aa4b2;--accent:#6ea8fe;--danger:#ff6b6b;--keep:#6bd89f;--border:#313946}
+*{box-sizing:border-box} html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{overscroll-behavior:none;touch-action:manipulation}
+.wrap{width:min(760px,100%);height:100svh;margin:0 auto;padding:max(10px,env(safe-area-inset-top)) 12px max(10px,env(safe-area-inset-bottom)) 12px;display:grid;grid-template-rows:auto auto auto auto minmax(0,1fr) auto auto;gap:8px;overflow:hidden}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.title{font-size:1.18rem;font-weight:700;line-height:1.1}.subtitle,.tiny,.status{font-size:.72rem;color:var(--muted);line-height:1.15}.subtitle{margin-top:2px;font-size:.78rem}
+.toolbar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+button,.file-label{display:inline-flex;align-items:center;justify-content:center;width:100%;min-height:40px;padding:9px 10px;border:1px solid var(--border);background:var(--panel2);color:var(--text);border-radius:12px;font-size:.86rem;font-weight:600;text-align:center;cursor:pointer}
+button:disabled{opacity:.45;cursor:default} input[type=file]{display:none}.cut-btn{border-color:#7a4141}.keep-btn{border-color:#4d7e67}
+.options{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:40px;padding:8px 10px;border:1px solid var(--border);border-radius:12px;background:var(--panel)}
+.checkbox{display:flex;align-items:center;gap:8px;min-width:0;font-size:.8rem}.checkbox input{margin:0;width:16px;height:16px;accent-color:var(--accent)} .progress-inline{font-size:.76rem;color:var(--muted);white-space:nowrap}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{padding:7px 8px;border:1px solid var(--border);border-radius:12px;background:var(--panel);text-align:center}.stat .n{display:block;font-size:1rem;font-weight:800;line-height:1}.stat .l{display:block;margin-top:2px;font-size:.68rem;color:var(--muted);line-height:1.05}
+.progress{height:7px;border:1px solid var(--border);border-radius:999px;background:var(--panel2);overflow:hidden}.fill{height:100%;width:0;background:var(--accent);transition:width .16s ease}
+.stack{min-height:0}.card,.empty{height:100%;min-height:0;border-radius:18px}.card{position:relative;padding:14px;border:1px solid var(--border);background:var(--panel);display:grid;grid-template-rows:auto 1fr auto;gap:10px;overflow:hidden;transition:transform .18s ease;touch-action:pan-y}.card.dragging{transition:none}
+.badge{display:inline-flex;align-items:center;width:fit-content;padding:4px 8px;border:1px solid var(--border);border-radius:999px;background:rgba(255,255,255,.04);font-size:.72rem;font-weight:700;line-height:1}.badge.mic{color:#8dc1ff}.badge.game{color:#ffc285}
+.time{color:var(--muted);font-size:.82rem;line-height:1.2;padding-right:54px}.line{min-height:0;overflow:auto;white-space:pre-wrap;word-break:break-word;font-size:clamp(1.02rem,3.8vw,1.18rem);line-height:1.34;scrollbar-width:none}.line::-webkit-scrollbar{display:none}.hint{text-align:center;color:var(--muted);font-size:.73rem;line-height:1.15}
+.swipe{position:absolute;top:12px;font-size:.8rem;font-weight:800;opacity:0;pointer-events:none}.swipe.cut{left:12px;color:var(--danger)}.swipe.keep{right:12px;color:var(--keep)}
+.empty{display:flex;align-items:center;justify-content:center;padding:18px 14px;border:1px dashed var(--border);background:var(--panel);text-align:center;color:var(--muted);font-size:.92rem;line-height:1.35}
+@media (max-width:420px){.toolbar{grid-template-columns:repeat(2,1fr)}.checkbox{font-size:.76rem}.options{padding:7px 9px}}
+@media (display-mode:standalone){.tiny{display:none}}
+</style>
 </head>
 <body>
 <main class="wrap">
-  <h1>CutScript Mobile</h1>
-  <p class="sub">Swipe through transcript lines. Left = CUT. Right = KEEP. Your progress is saved automatically on this device.</p>
-
-  <div class="toolbar">
-    <label class="file-label">Import transcript<input id="fileInput" type="file" accept=".txt,text/plain"></label>
-    <button id="undoBtn" type="button" disabled>Undo</button>
-    <button id="exportBtn" type="button" disabled>Export edited transcript</button>
-    <button id="resetBtn" type="button" disabled>Reset</button>
-  </div>
-
-  <label class="option">
-    <input id="silentFilter" type="checkbox" checked>
-    <div><strong>Automatically cut silent lines</strong><span>When importing, any voice line containing exactly one period (.) is immediately marked CUT and skipped during review.</span></div>
-  </label>
-
-  <div id="resumeBox" class="resume"><div class="resume-title">Saved session restored</div><div id="resumeText" class="resume-text"></div></div>
-
-  <div class="stats">
-    <div class="stat"><div class="num" id="totalCount">0</div><div class="label">Total</div></div>
-    <div class="stat"><div class="num" id="keptCount">0</div><div class="label">Kept</div></div>
-    <div class="stat"><div class="num" id="cutCount">0</div><div class="label">Cut</div></div>
-  </div>
-
-  <div class="progress-wrap"><div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div><div class="progress-text" id="progressText">Import a transcript to begin.</div></div>
-  <section class="card-stack" id="cardStack"><div class="empty">Your transcript lines will appear here one at a time.</div></section>
-  <div class="actions"><button id="cutBtn" type="button" disabled>← CUT</button><button id="keepBtn" type="button" disabled>KEEP →</button></div>
-  <div class="status" id="saveStatus">Auto-save ready.</div>
-  <div class="status" id="offlineStatus">Checking offline support…</div>
+  <header class="top">
+    <div><div class="title">CutScript Mobile</div><div class="subtitle">Swipe left = CUT • Swipe right = KEEP</div></div>
+    <div class="tiny">Add to Home Screen for offline use.</div>
+  </header>
+  <section class="toolbar">
+    <label class="file-label">Import<input id="fileInput" type="file" accept=".txt,text/plain"></label>
+    <button id="undoBtn" disabled>Undo</button><button id="exportBtn" disabled>Export</button><button id="resetBtn" disabled>Reset</button>
+  </section>
+  <section class="options">
+    <label class="checkbox"><input id="silentFilter" type="checkbox" checked><span>Auto-cut silent lines (.)</span></label>
+    <div class="progress-inline" id="progressInline">0 / 0</div>
+  </section>
+  <section class="stats">
+    <div class="stat"><span class="n" id="totalCount">0</span><span class="l">Total</span></div>
+    <div class="stat"><span class="n" id="keptCount">0</span><span class="l">Kept</span></div>
+    <div class="stat"><span class="n" id="cutCount">0</span><span class="l">Cut</span></div>
+  </section>
+  <div class="progress"><div class="fill" id="progressFill"></div></div>
+  <section class="stack" id="cardStack"><div class="empty">Import a transcript to begin.</div></section>
+  <section class="actions"><button class="cut-btn" id="cutBtn" disabled>← CUT</button><button class="keep-btn" id="keepBtn" disabled>KEEP →</button></section>
+  <div class="status" id="status">Ready.</div>
 </main>
 <script>
-(()=>{
-  const $=id=>document.getElementById(id), fileInput=$('fileInput'),undoBtn=$('undoBtn'),exportBtn=$('exportBtn'),resetBtn=$('resetBtn'),cutBtn=$('cutBtn'),keepBtn=$('keepBtn'),cardStack=$('cardStack'),totalCount=$('totalCount'),keptCount=$('keptCount'),cutCount=$('cutCount'),progressFill=$('progressFill'),progressText=$('progressText'),silentFilter=$('silentFilter'),saveStatus=$('saveStatus'),offlineStatus=$('offlineStatus'),resumeBox=$('resumeBox'),resumeText=$('resumeText');
-  let segments=[],currentIndex=0,history=[],originalFileName='transcript.txt',sessionKey=null;
-  const STORAGE_PREFIX='cutscript-session-v2:';
-
-  function parseTranscript(text){
-    const regex=/\[([^\]]+?)\s*-->\s*([^\]]+?)\]\s*\r?\n([\s\S]*?)(?=\r?\n\s*\r?\n\s*\[|\s*$)/g, parsed=[];let m;
-    while((m=regex.exec(text))!==null)parsed.push({start:m[1].trim(),end:m[2].trim(),text:m[3].trim(),decision:null});
-    return parsed;
+(() => {
+  const STORE='cutscript-session-v2:';
+  const $=id=>document.getElementById(id);
+  const el={file:$('fileInput'),undo:$('undoBtn'),exp:$('exportBtn'),reset:$('resetBtn'),cut:$('cutBtn'),keep:$('keepBtn'),silent:$('silentFilter'),stack:$('cardStack'),total:$('totalCount'),kept:$('keptCount'),cutCount:$('cutCount'),fill:$('progressFill'),inline:$('progressInline'),status:$('status')};
+  let segments=[],history=[],idx=0,fileName='transcript.txt',sessionKey=null;
+  const esc=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');
+  const hash=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(16)};
+  const silent=s=>s.text.trim()==='.';
+  const norm=()=>{while(idx<segments.length && segments[idx].decision!==null)idx++};
+  function parse(text){
+    const re=/(?:\[(MIC|GAME)\]\s*\r?\n)?\[([^\]]+?)\s*-->\s*([^\]]+?)\]\s*\r?\n([\s\S]*?)(?=\r?\n\s*\r?\n\s*(?:\[(?:MIC|GAME)\]\s*\r?\n)?\[|\s*$)/g;
+    const out=[];let m;while((m=re.exec(text))!==null)out.push({source:m[1]?m[1].trim().toLowerCase():null,start:m[2].trim(),end:m[3].trim(),text:m[4].trim(),decision:null,decisionSource:null});return out;
   }
-  function hashText(text){let h=2166136261;for(let i=0;i<text.length;i++){h^=text.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(16)}
-  function esc(v){return String(v).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;')}
-  function isSilent(s){return s.text.trim()==='.'}
-  function nextUndecided(start=0){for(let i=Math.max(0,start);i<segments.length;i++)if(segments[i].decision===null)return i;return segments.length}
-
-  function saveSession(){
-    if(!sessionKey||!segments.length)return;
-    try{
-      localStorage.setItem(sessionKey,JSON.stringify({version:2,fileName:originalFileName,currentIndex,history,decisions:segments.map(s=>s.decision),savedAt:new Date().toISOString()}));
-      saveStatus.textContent='Saved automatically • '+new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
-    }catch(e){saveStatus.textContent='Could not auto-save on this device.'}
+  function save(msg=''){
+    if(!sessionKey)return;try{localStorage.setItem(sessionKey,JSON.stringify({fileName,idx,history,silent:el.silent.checked,segments}));if(msg)el.status.textContent=msg}catch{el.status.textContent='Could not auto-save.'}
   }
-  function restoreSession(key,parsed){
-    try{
-      const raw=localStorage.getItem(key);if(!raw)return false;const saved=JSON.parse(raw);
-      if(!Array.isArray(saved.decisions)||saved.decisions.length!==parsed.length)return false;
-      parsed.forEach((s,i)=>{s.decision=saved.decisions[i]??null});
-      segments=parsed;history=Array.isArray(saved.history)?saved.history.filter(i=>Number.isInteger(i)&&i>=0&&i<segments.length):[];
-      currentIndex=Number.isInteger(saved.currentIndex)?saved.currentIndex:0;
-      if(currentIndex>=segments.length||segments[currentIndex]?.decision!==null)currentIndex=nextUndecided(currentIndex);
-      resumeText.textContent=`${originalFileName}: ${segments.filter(s=>s.decision!==null).length} of ${segments.length} lines already reviewed.`;
-      resumeBox.classList.add('show');return true;
-    }catch(e){return false}
+  function restore(key,parsed){
+    const raw=localStorage.getItem(key);if(!raw)return false;try{const saved=JSON.parse(raw);if(!saved||!Array.isArray(saved.segments)||saved.segments.length!==parsed.length)return false;for(let i=0;i<parsed.length;i++){const a=parsed[i],b=saved.segments[i];if(a.start!==b.start||a.end!==b.end||a.text!==b.text||(a.source||null)!==(b.source||null))return false}segments=saved.segments.map(s=>({...s}));history=Array.isArray(saved.history)?saved.history:[];fileName=saved.fileName||fileName;el.silent.checked=saved.silent!==false;idx=Number.isInteger(saved.idx)?saved.idx:0;norm();el.status.textContent='Progress restored.';return true}catch{return false}
   }
-  function applySilentFilter(){
-    if(!silentFilter.checked)return 0;let n=0;
-    for(const s of segments)if(s.decision===null&&isSilent(s)){s.decision='cut';n++}
-    return n;
-  }
+  function applySilent(){if(el.silent.checked){for(const s of segments)if(silent(s)&&s.decision===null){s.decision='cut';s.decisionSource='auto'}}else{for(const s of segments)if(s.decisionSource==='auto'){s.decision=null;s.decisionSource=null}}idx=0;norm()}
   function render(){
     const decided=segments.filter(s=>s.decision!==null).length,kept=segments.filter(s=>s.decision==='keep').length,cut=segments.filter(s=>s.decision==='cut').length;
-    totalCount.textContent=segments.length;keptCount.textContent=kept;cutCount.textContent=cut;
-    const pct=segments.length?Math.round(decided/segments.length*100):0;progressFill.style.width=pct+'%';progressText.textContent=segments.length?`${Math.min(currentIndex+1,segments.length)} / ${segments.length} • ${pct}% reviewed`:'Import a transcript to begin.';
-    const has=segments.length>0,active=currentIndex<segments.length;cutBtn.disabled=!active;keepBtn.disabled=!active;undoBtn.disabled=history.length===0;exportBtn.disabled=!has;resetBtn.disabled=!has;cardStack.innerHTML='';
-    if(!has)cardStack.innerHTML='<div class="empty">Your transcript lines will appear here one at a time.</div>';
-    else if(!active)cardStack.innerHTML='<div class="empty"><strong>Review complete!</strong><br><br>Export your edited transcript or undo a decision.</div>';
-    else{const s=segments[currentIndex],card=document.createElement('article');card.className='card';card.innerHTML=`<div class="swipe-label cut">CUT</div><div class="swipe-label keep">KEEP</div><div class="timestamp">${esc(s.start)} → ${esc(s.end)}</div><div class="line">${esc(s.text)}</div><div class="hint">Swipe left to CUT • Swipe right to KEEP</div>`;cardStack.appendChild(card);attachSwipe(card)}
+    el.total.textContent=segments.length;el.kept.textContent=kept;el.cutCount.textContent=cut;el.fill.style.width=(segments.length?Math.round(decided/segments.length*100):0)+'%';el.inline.textContent=segments.length?`${Math.min(idx+1,segments.length)} / ${segments.length}`:'0 / 0';
+    const has=segments.length>0,active=idx<segments.length;el.cut.disabled=!active;el.keep.disabled=!active;el.undo.disabled=history.length===0;el.exp.disabled=!has;el.reset.disabled=!has;el.silent.disabled=!has;
+    if(!has){el.stack.innerHTML='<div class="empty">Import a transcript to begin.</div>';return}if(!active){el.stack.innerHTML='<div class="empty"><div><strong>Review complete!</strong><br><br>Export your edited transcript or hit Reset.</div></div>';return}
+    const s=segments[idx],badge=s.source?`<div class="badge ${s.source}">${s.source.toUpperCase()}</div>`:'';el.stack.innerHTML=`<article class="card" id="card"><div class="swipe cut">CUT</div><div class="swipe keep">KEEP</div><div>${badge}<div class="time">${esc(s.start)} → ${esc(s.end)}</div></div><div class="line">${esc(s.text)}</div><div class="hint">Swipe or use the buttons below</div></article>`;swipe($('card'));
   }
-  function decide(decision){if(currentIndex>=segments.length)return;segments[currentIndex].decision=decision;history.push(currentIndex);currentIndex=nextUndecided(currentIndex+1);saveSession();render()}
-  function undo(){if(!history.length)return;const idx=history.pop();segments[idx].decision=null;currentIndex=idx;saveSession();render()}
-  function resetDecisions(){for(const s of segments)s.decision=null;history=[];applySilentFilter();currentIndex=nextUndecided(0);saveSession();resumeBox.classList.remove('show');render()}
-  function exportTranscript(){
-    if(!segments.length)return;const kept=segments.filter(s=>s.decision!=='cut'),text=kept.map(s=>`[${s.start} --> ${s.end}]\n${s.text}`).join('\n\n')+'\n',blob=new Blob([text],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=originalFileName.replace(/\.txt$/i,'')+'_edited.txt';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)
-  }
-  function attachSwipe(card){
-    let startX=0,currentX=0,dragging=false;const cutLabel=card.querySelector('.cut'),keepLabel=card.querySelector('.keep'),threshold=90;
-    card.addEventListener('pointerdown',e=>{dragging=true;startX=e.clientX;currentX=0;card.setPointerCapture(e.pointerId);card.classList.add('dragging')});
-    card.addEventListener('pointermove',e=>{if(!dragging)return;currentX=e.clientX-startX;card.style.transform=`translateX(${currentX}px) rotate(${currentX*.015}deg)`;const op=Math.min(Math.abs(currentX)/threshold,1);if(currentX<0){cutLabel.style.opacity=op;keepLabel.style.opacity=0}else{keepLabel.style.opacity=op;cutLabel.style.opacity=0}});
-    const finish=()=>{if(!dragging)return;dragging=false;card.classList.remove('dragging');if(currentX<=-threshold)decide('cut');else if(currentX>=threshold)decide('keep');else{card.style.transform='';cutLabel.style.opacity=0;keepLabel.style.opacity=0}};card.addEventListener('pointerup',finish);card.addEventListener('pointercancel',finish)
-  }
-
-  fileInput.addEventListener('change',async()=>{
-    const file=fileInput.files&&fileInput.files[0];if(!file)return;const text=await file.text(),parsed=parseTranscript(text);if(!parsed.length){alert('No CutScript timestamp blocks were found in that file.');fileInput.value='';return}
-    originalFileName=file.name;sessionKey=STORAGE_PREFIX+file.name+':'+hashText(text);resumeBox.classList.remove('show');history=[];
-    if(!restoreSession(sessionKey,parsed)){
-      segments=parsed;const silentCount=applySilentFilter();currentIndex=nextUndecided(0);saveSession();if(silentCount>0){resumeText.textContent=`Automatically cut ${silentCount} silent line${silentCount===1?'':'s'} containing only a period.`;resumeBox.classList.add('show')}
-    }
-    render();fileInput.value='';
-  });
-  silentFilter.addEventListener('change',()=>{if(!segments.length)return;if(silentFilter.checked){const n=applySilentFilter();currentIndex=nextUndecided(currentIndex);if(n){resumeText.textContent=`Automatically cut ${n} silent line${n===1?'':'s'} containing only a period.`;resumeBox.classList.add('show')}}saveSession();render()});
-  cutBtn.addEventListener('click',()=>decide('cut'));keepBtn.addEventListener('click',()=>decide('keep'));undoBtn.addEventListener('click',undo);resetBtn.addEventListener('click',resetDecisions);exportBtn.addEventListener('click',exportTranscript);
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveSession()});window.addEventListener('pagehide',saveSession);
-
-  if('serviceWorker'in navigator)navigator.serviceWorker.register('./service-worker.js').then(()=>offlineStatus.textContent='Offline support installed.').catch(()=>offlineStatus.textContent='Offline support could not be installed in this browser session.');else offlineStatus.textContent='This browser does not support offline installation.';
+  function decide(kind){if(idx>=segments.length)return;segments[idx].decision=kind;segments[idx].decisionSource='manual';history.push(idx);idx++;norm();save('Progress saved.');render()}
+  function undo(){if(!history.length)return;const i=history.pop();segments[i].decision=null;segments[i].decisionSource=null;idx=i;norm();save('Undo saved.');render()}
+  function reset(){for(const s of segments){s.decision=null;s.decisionSource=null}history=[];idx=0;applySilent();save('Progress reset.');render()}
+  function exportText(){if(!segments.length)return;const text=segments.filter(s=>s.decision!=='cut').map(s=>`${s.source?`[${s.source.toUpperCase()}]\n`:''}[${s.start} --> ${s.end}]\n${s.text}`).join('\n\n')+'\n';const blob=new Blob([text],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=fileName.replace(/\.txt$/i,'')+'_edited.txt';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);save('Edited transcript exported.')}
+  function swipe(card){let sx=0,cx=0,drag=false;const cut=card.querySelector('.swipe.cut'),keep=card.querySelector('.swipe.keep'),t=85;card.addEventListener('pointerdown',e=>{drag=true;sx=e.clientX;cx=0;card.setPointerCapture(e.pointerId);card.classList.add('dragging')});card.addEventListener('pointermove',e=>{if(!drag)return;cx=e.clientX-sx;card.style.transform=`translateX(${cx}px) rotate(${cx*.015}deg)`;const o=Math.min(Math.abs(cx)/t,1);if(cx<0){cut.style.opacity=o;keep.style.opacity=0}else{keep.style.opacity=o;cut.style.opacity=0}});const done=()=>{if(!drag)return;drag=false;card.classList.remove('dragging');if(cx<=-t)decide('cut');else if(cx>=t)decide('keep');else{card.style.transform='';cut.style.opacity=0;keep.style.opacity=0}};card.addEventListener('pointerup',done);card.addEventListener('pointercancel',done)}
+  el.file.addEventListener('change',async()=>{const f=el.file.files&&el.file.files[0];if(!f)return;const text=await f.text(),parsed=parse(text);if(!parsed.length){alert('No CutScript timestamp blocks were found in that file.');el.file.value='';return}fileName=f.name;sessionKey=STORE+f.name+':'+hash(text);if(!restore(sessionKey,parsed)){segments=parsed;history=[];idx=0;applySilent();save('Transcript loaded.')}render();el.file.value=''});
+  el.silent.addEventListener('change',()=>{if(!segments.length)return;applySilent();save(el.silent.checked?'Silent lines filtered.':'Silent line filter disabled.');render()});
+  el.cut.addEventListener('click',()=>decide('cut'));el.keep.addEventListener('click',()=>decide('keep'));el.undo.addEventListener('click',undo);el.reset.addEventListener('click',reset);el.exp.addEventListener('click',exportText);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')save()});window.addEventListener('pagehide',()=>save());
+  if('serviceWorker'in navigator)navigator.serviceWorker.register('./service-worker.js').then(()=>{if(el.status.textContent==='Ready.')el.status.textContent='Offline support installed.'}).catch(()=>{el.status.textContent='Offline support unavailable.'});
   render();
 })();
 </script>
