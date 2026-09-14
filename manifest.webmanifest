@@ -1,0 +1,9 @@
+{
+  "name": "CutScript Mobile",
+  "short_name": "CutScript",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#111318",
+  "theme_color": "#111318",
+  "description": "Swipe through CutScript transcript lines to keep or cut them."
+}

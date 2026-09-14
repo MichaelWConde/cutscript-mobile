@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#111318" />
+  <link rel="manifest" href="manifest.webmanifest">
+  <title>CutScript Mobile</title>
+  <style>
+    :root {
+      --bg: #111318;
+      --panel: #1a1f27;
+      --panel2: #222936;
+      --text: #f2f4f8;
+      --muted: #9aa4b2;
+      --accent: #6ea8fe;
+      --danger: #ff6b6b;
+      --keep: #6bd89f;
+      --border: #313946;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .wrap {
+      width: min(760px, 100%);
+      margin: 0 auto;
+      padding: 16px;
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
+    }
+    h1 { margin: 8px 0 4px; font-size: 1.6rem; }
+    .sub { margin: 0 0 16px; color: var(--muted); line-height: 1.4; }
+    .install-note {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 12px 14px;
+      border-radius: 12px;
+      color: var(--muted);
+      margin-bottom: 14px;
+      font-size: .9rem;
+      line-height: 1.4;
+    }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    button, .file-label {
+      border: 1px solid var(--border);
+      background: var(--panel2);
+      color: var(--text);
+      padding: 12px 14px;
+      min-height: 44px;
+      border-radius: 12px;
+      font-size: 1rem;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    button:disabled { opacity: .45; cursor: default; }
+    .file-label { display: inline-flex; align-items: center; justify-content: center; }
+    input[type="file"] { display: none; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 12px 0;
+    }
+    .stat {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      text-align: center;
+    }
+    .stat .num { font-weight: 800; font-size: 1.15rem; }
+    .stat .label { color: var(--muted); font-size: .78rem; margin-top: 3px; }
+
+    .progress-wrap { margin: 12px 0 16px; }
+    .progress-bar {
+      height: 10px;
+      background: var(--panel2);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      transition: width .15s ease;
+    }
+    .progress-text {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: .85rem;
+      text-align: center;
+    }
+    .card-stack { position: relative; min-height: 270px; }
+    .card {
+      position: relative;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      min-height: 245px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      user-select: none;
+      touch-action: pan-y;
+      transition: transform .18s ease, opacity .18s ease;
+    }
+    .card.dragging { transition: none; }
+    .timestamp { color: var(--muted); font-size: .9rem; margin-bottom: 18px; }
+    .line {
+      font-size: 1.35rem;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      word-break: break-word;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+    .hint { color: var(--muted); font-size: .85rem; margin-top: 18px; text-align: center; }
+    .swipe-label {
+      position: absolute;
+      top: 18px;
+      font-weight: 800;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .swipe-label.cut { left: 18px; color: var(--danger); }
+    .swipe-label.keep { right: 18px; color: var(--keep); }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .empty {
+      background: var(--panel);
+      border: 1px dashed var(--border);
+      border-radius: 18px;
+      padding: 28px 18px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .status {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: .85rem;
+    }
+    @media (max-width: 480px) {
+      .wrap { padding: 12px; }
+      .line { font-size: 1.18rem; }
+      .toolbar > * { flex: 1 1 calc(50% - 10px); }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <h1>CutScript Mobile</h1>
+    <p class="sub">Swipe through transcript lines. Left = CUT. Right = KEEP.</p>
+
+    <div class="install-note">
+      On iPhone, open this page in Safari, tap Share, then <strong>Add to Home Screen</strong>.
+      After the first successful load, the app can work offline.
+    </div>
+
+    <div class="toolbar">
+      <label class="file-label">
+        Import transcript
+        <input id="fileInput" type="file" accept=".txt,text/plain">
+      </label>
+      <button id="undoBtn" type="button" disabled>Undo</button>
+      <button id="exportBtn" type="button" disabled>Export edited transcript</button>
+      <button id="resetBtn" type="button" disabled>Reset</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="num" id="totalCount">0</div><div class="label">Total</div></div>
+      <div class="stat"><div class="num" id="keptCount">0</div><div class="label">Kept</div></div>
+      <div class="stat"><div class="num" id="cutCount">0</div><div class="label">Cut</div></div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-text" id="progressText">Import a transcript to begin.</div>
+    </div>
+
+    <section class="card-stack" id="cardStack">
+      <div class="empty">Your transcript lines will appear here one at a time.</div>
+    </section>
+
+    <div class="actions">
+      <button id="cutBtn" type="button" disabled>← CUT</button>
+      <button id="keepBtn" type="button" disabled>KEEP →</button>
+    </div>
+
+    <div class="status" id="offlineStatus">Checking offline support…</div>
+  </main>
+
+  <script>
+    (() => {
+      const fileInput = document.getElementById('fileInput');
+      const undoBtn = document.getElementById('undoBtn');
+      const exportBtn = document.getElementById('exportBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const cutBtn = document.getElementById('cutBtn');
+      const keepBtn = document.getElementById('keepBtn');
+      const cardStack = document.getElementById('cardStack');
+      const totalCount = document.getElementById('totalCount');
+      const keptCount = document.getElementById('keptCount');
+      const cutCount = document.getElementById('cutCount');
+      const progressFill = document.getElementById('progressFill');
+      const progressText = document.getElementById('progressText');
+      const offlineStatus = document.getElementById('offlineStatus');
+
+      let segments = [];
+      let currentIndex = 0;
+      let history = [];
+      let originalFileName = 'transcript.txt';
+
+      function parseTranscript(text) {
+        const regex = /\[([^\]]+?)\s*-->\s*([^\]]+?)\]\s*\r?\n([\s\S]*?)(?=\r?\n\s*\r?\n\s*\[|\s*$)/g;
+        const parsed = [];
+        let match;
+        while ((match = regex.exec(text)) !== null) {
+          const body = match[3].trim();
+          parsed.push({
+            start: match[1].trim(),
+            end: match[2].trim(),
+            text: body,
+            decision: null
+          });
+        }
+        return parsed;
+      }
+
+      function esc(v) {
+        return String(v)
+          .replaceAll('&','&amp;')
+          .replaceAll('<','&lt;')
+          .replaceAll('>','&gt;')
+          .replaceAll('"','&quot;')
+          .replaceAll("'","&#039;");
+      }
+
+      function render() {
+        const decided = segments.filter(s => s.decision !== null).length;
+        const kept = segments.filter(s => s.decision === 'keep').length;
+        const cut = segments.filter(s => s.decision === 'cut').length;
+
+        totalCount.textContent = segments.length;
+        keptCount.textContent = kept;
+        cutCount.textContent = cut;
+
+        const pct = segments.length ? Math.round((decided / segments.length) * 100) : 0;
+        progressFill.style.width = pct + '%';
+        progressText.textContent = segments.length
+          ? `${Math.min(currentIndex + 1, segments.length)} / ${segments.length} • ${pct}% reviewed`
+          : 'Import a transcript to begin.';
+
+        const hasSegments = segments.length > 0;
+        const hasCurrent = currentIndex < segments.length;
+
+        cutBtn.disabled = !hasCurrent;
+        keepBtn.disabled = !hasCurrent;
+        undoBtn.disabled = history.length === 0;
+        exportBtn.disabled = !hasSegments;
+        resetBtn.disabled = !hasSegments;
+
+        cardStack.innerHTML = '';
+
+        if (!hasSegments) {
+          cardStack.innerHTML = '<div class="empty">Your transcript lines will appear here one at a time.</div>';
+        } else if (!hasCurrent) {
+          cardStack.innerHTML = '<div class="empty"><strong>Review complete!</strong><br><br>Export your edited transcript or undo a decision.</div>';
+        } else {
+          const s = segments[currentIndex];
+          const card = document.createElement('article');
+          card.className = 'card';
+          card.innerHTML = `
+            <div class="swipe-label cut">CUT</div>
+            <div class="swipe-label keep">KEEP</div>
+            <div class="timestamp">${esc(s.start)} → ${esc(s.end)}</div>
+            <div class="line">${esc(s.text)}</div>
+            <div class="hint">Swipe left to CUT • Swipe right to KEEP</div>
+          `;
+          cardStack.appendChild(card);
+          attachSwipe(card);
+        }
+      }
+
+      function decide(decision) {
+        if (currentIndex >= segments.length) return;
+        segments[currentIndex].decision = decision;
+        history.push(currentIndex);
+        currentIndex++;
+        render();
+      }
+
+      function undo() {
+        if (!history.length) return;
+        const idx = history.pop();
+        segments[idx].decision = null;
+        currentIndex = idx;
+        render();
+      }
+
+      function resetDecisions() {
+        for (const s of segments) s.decision = null;
+        currentIndex = 0;
+        history = [];
+        render();
+      }
+
+      function exportTranscript() {
+        if (!segments.length) return;
+        const keptSegments = segments.filter(s => s.decision !== 'cut');
+        const text = keptSegments.map(s =>
+          `[${s.start} --> ${s.end}]\n${s.text}`
+        ).join('\n\n') + '\n';
+
+        const blob = new Blob([text], {type:'text/plain;charset=utf-8'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const stem = originalFileName.replace(/\.txt$/i,'');
+        a.href = url;
+        a.download = stem + '_edited.txt';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+
+      function attachSwipe(card) {
+        let startX = 0;
+        let currentX = 0;
+        let dragging = false;
+        const cutLabel = card.querySelector('.cut');
+        const keepLabel = card.querySelector('.keep');
+        const threshold = 90;
+
+        card.addEventListener('pointerdown', e => {
+          dragging = true;
+          startX = e.clientX;
+          currentX = 0;
+          card.setPointerCapture(e.pointerId);
+          card.classList.add('dragging');
+        });
+
+        card.addEventListener('pointermove', e => {
+          if (!dragging) return;
+          currentX = e.clientX - startX;
+          card.style.transform = `translateX(${currentX}px) rotate(${currentX * 0.015}deg)`;
+
+          const opacity = Math.min(Math.abs(currentX) / threshold, 1);
+          if (currentX < 0) {
+            cutLabel.style.opacity = opacity;
+            keepLabel.style.opacity = 0;
+          } else {
+            keepLabel.style.opacity = opacity;
+            cutLabel.style.opacity = 0;
+          }
+        });
+
+        function finish() {
+          if (!dragging) return;
+          dragging = false;
+          card.classList.remove('dragging');
+
+          if (currentX <= -threshold) {
+            decide('cut');
+          } else if (currentX >= threshold) {
+            decide('keep');
+          } else {
+            card.style.transform = '';
+            cutLabel.style.opacity = 0;
+            keepLabel.style.opacity = 0;
+          }
+        }
+
+        card.addEventListener('pointerup', finish);
+        card.addEventListener('pointercancel', finish);
+      }
+
+      fileInput.addEventListener('change', async () => {
+        const file = fileInput.files && fileInput.files[0];
+        if (!file) return;
+
+        const text = await file.text();
+        const parsed = parseTranscript(text);
+
+        if (!parsed.length) {
+          alert('No CutScript timestamp blocks were found in that file.');
+          fileInput.value = '';
+          return;
+        }
+
+        segments = parsed;
+        currentIndex = 0;
+        history = [];
+        originalFileName = file.name;
+        render();
+      });
+
+      cutBtn.addEventListener('click', () => decide('cut'));
+      keepBtn.addEventListener('click', () => decide('keep'));
+      undoBtn.addEventListener('click', undo);
+      resetBtn.addEventListener('click', resetDecisions);
+      exportBtn.addEventListener('click', exportTranscript);
+
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./service-worker.js')
+          .then(() => {
+            offlineStatus.textContent = 'Offline support installed. After this first load, CutScript can open without Wi-Fi.';
+          })
+          .catch(() => {
+            offlineStatus.textContent = 'Offline support could not be installed in this browser session.';
+          });
+      } else {
+        offlineStatus.textContent = 'This browser does not support offline installation.';
+      }
+
+      render();
+    })();
+  </script>
+</body>
+</html>
